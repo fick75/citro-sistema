@@ -1,0 +1,429 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CITRO - Sistema de Gestión Académica Digital</title>
+    <link rel="stylesheet" href="styles.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <!-- Microsoft Authentication Library (MSAL) -->
+    <script src="https://alcdn.msauth.net/browser/2.38.0/js/msal-browser.min.js"></script>
+</head>
+<body>
+
+    <!-- ═══ HEADER ═══ -->
+    <header class="header">
+        <div class="container header-content">
+            <div class="logo-section">
+                <div class="logo-circle">
+                    <!-- Logo CITRO -->
+                    <svg width="28" height="28" viewBox="0 0 32 32" fill="none">
+                        <path d="M16 8L8 16L16 24L24 16L16 8Z" fill="#0078D4"/>
+                        <circle cx="16" cy="16" r="12" stroke="#0078D4" stroke-width="2" fill="none"/>
+                    </svg>
+                </div>
+                <div class="logo-text">
+                    <h1 class="system-title">SISTEMA CITRO</h1>
+                    <p class="system-subtitle">GESTIÓN INSTITUCIONAL UV</p>
+                </div>
+            </div>
+            <nav class="nav-buttons">
+                <!-- Estado: No autenticado -->
+                <div id="login-container">
+                    <button class="btn-ms-login" onclick="signInWithMicrosoft()">
+                        <svg width="18" height="18" viewBox="0 0 21 21" fill="none">
+                            <rect x="0" y="0" width="10" height="10" fill="#F25022"/>
+                            <rect x="11" y="0" width="10" height="10" fill="#7FBA00"/>
+                            <rect x="0" y="11" width="10" height="10" fill="#00A4EF"/>
+                            <rect x="11" y="11" width="10" height="10" fill="#FFB900"/>
+                        </svg>
+                        Iniciar sesión con Microsoft
+                    </button>
+                </div>
+
+                <!-- Estado: Autenticado -->
+                <div id="user-menu" class="user-menu" style="display:none">
+                    <div class="user-avatar" onclick="toggleUserDropdown()">
+                        <div id="user-initials" class="user-initials">UV</div>
+                        <span id="user-name-short"></span>
+                        <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
+                            <path d="M2 4L6 8L10 4" stroke="currentColor" stroke-width="2"/>
+                        </svg>
+                    </div>
+                    <div id="user-dropdown" class="user-dropdown">
+                        <div class="dropdown-header">
+                            <div id="user-avatar-large" class="user-initials-large">UV</div>
+                            <div>
+                                <div id="user-name-full" class="user-name-full"></div>
+                                <div id="user-email-dd" class="user-email"></div>
+                            </div>
+                        </div>
+                        <div class="dropdown-divider"></div>
+                        <button class="dropdown-item" onclick="goToMisSolicitudes()">
+                            📋 Mis Solicitudes
+                        </button>
+                        <button class="dropdown-item" id="admin-panel-btn" onclick="goToAdminPanel()" style="display:none">
+                            👑 Panel de Administración
+                        </button>
+                        <div class="dropdown-divider"></div>
+                        <button class="dropdown-item logout" onclick="signOutMicrosoft()">
+                            🚪 Cerrar Sesión
+                        </button>
+                    </div>
+                </div>
+
+                <button class="btn-nav-secondary" onclick="goToHome()">Inicio</button>
+            </nav>
+        </div>
+    </header>
+
+    <!-- ═══ MAIN CONTENT ═══ -->
+    <main class="main-content">
+        <div class="container">
+
+            <!-- ─── LANDING PAGE ─── -->
+            <section id="landing-page" class="landing-page active">
+                <div class="hero-section">
+                    <div class="ms-badge">
+                        <svg width="14" height="14" viewBox="0 0 21 21" fill="none">
+                            <rect x="0" y="0" width="10" height="10" fill="#F25022"/>
+                            <rect x="11" y="0" width="10" height="10" fill="#7FBA00"/>
+                            <rect x="0" y="11" width="10" height="10" fill="#00A4EF"/>
+                            <rect x="11" y="11" width="10" height="10" fill="#FFB900"/>
+                        </svg>
+                        Integrado con Microsoft 365
+                    </div>
+                    <h2 class="hero-title">Gestión Académica Digital</h2>
+                    <p class="hero-description">
+                        Seleccione el tipo de trámite que desea realizar.
+                        El sistema generará automáticamente el formato oficial y lo almacenará en SharePoint.
+                    </p>
+                </div>
+
+                <!-- Login requerido si no está autenticado -->
+                <div id="login-required-banner" class="login-banner" style="display:none">
+                    <div class="banner-content">
+                        <span>🔐 Inicia sesión con tu cuenta institucional para enviar solicitudes</span>
+                        <button class="btn-banner-login" onclick="signInWithMicrosoft()">
+                            Iniciar sesión →
+                        </button>
+                    </div>
+                </div>
+
+                <div class="cards-grid">
+                    <div class="tramite-card" onclick="selectTramite('apoyo_academico')">
+                        <div class="card-icon green">
+                            <svg width="36" height="36" viewBox="0 0 48 48" fill="none">
+                                <path d="M12 20L24 8L36 20M24 12V38" stroke="currentColor" stroke-width="3" stroke-linecap="round"/>
+                                <rect x="8" y="32" width="32" height="8" rx="2" fill="currentColor" opacity="0.2"/>
+                            </svg>
+                        </div>
+                        <h3 class="card-title">Apoyo Académico</h3>
+                        <p class="card-description">Recursos económicos para actividades de investigación o eventos.</p>
+                        <div class="card-footer">
+                            <span class="card-badge">SharePoint</span>
+                            <span class="card-arrow">→</span>
+                        </div>
+                    </div>
+
+                    <div class="tramite-card" onclick="selectTramite('aval_institucional')">
+                        <div class="card-icon blue">
+                            <svg width="36" height="36" viewBox="0 0 48 48" fill="none">
+                                <circle cx="24" cy="24" r="16" stroke="currentColor" stroke-width="3"/>
+                                <path d="M18 24L22 28L30 20" stroke="currentColor" stroke-width="3" stroke-linecap="round"/>
+                            </svg>
+                        </div>
+                        <h3 class="card-title">Aval Institucional</h3>
+                        <p class="card-description">Respaldo oficial para representar al CITRO en eventos académicos.</p>
+                        <div class="card-footer">
+                            <span class="card-badge">SharePoint</span>
+                            <span class="card-arrow">→</span>
+                        </div>
+                    </div>
+
+                    <div class="tramite-card" onclick="selectTramite('apoyo_terceros')">
+                        <div class="card-icon purple">
+                            <svg width="36" height="36" viewBox="0 0 48 48" fill="none">
+                                <circle cx="18" cy="16" r="6" stroke="currentColor" stroke-width="2.5"/>
+                                <circle cx="30" cy="16" r="6" stroke="currentColor" stroke-width="2.5"/>
+                                <path d="M12 32C12 28 14 26 18 26C22 26 24 28 24 32" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/>
+                                <path d="M24 32C24 28 26 26 30 26C34 26 36 28 36 32" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/>
+                            </svg>
+                        </div>
+                        <h3 class="card-title">Apoyo a Terceros</h3>
+                        <p class="card-description">Apoyo para colaboradores externos o invitados especiales.</p>
+                        <div class="card-footer">
+                            <span class="card-badge">SharePoint</span>
+                            <span class="card-arrow">→</span>
+                        </div>
+                    </div>
+
+                    <div class="tramite-card" onclick="selectTramite('comite_tutorial')">
+                        <div class="card-icon teal">
+                            <svg width="36" height="36" viewBox="0 0 48 48" fill="none">
+                                <path d="M16 18H32M16 24H32M16 30H26" stroke="currentColor" stroke-width="3" stroke-linecap="round"/>
+                                <rect x="10" y="10" width="28" height="28" rx="3" stroke="currentColor" stroke-width="3"/>
+                            </svg>
+                        </div>
+                        <h3 class="card-title">Comité Tutorial</h3>
+                        <p class="card-description">Conformación o modificación de comité tutorial para posgrado.</p>
+                        <div class="card-footer">
+                            <span class="card-badge">SharePoint</span>
+                            <span class="card-arrow">→</span>
+                        </div>
+                    </div>
+
+                    <!-- 5TO FORMULARIO: SOLICITUD LIBRE -->
+                    <div class="tramite-card" onclick="selectTramite('solicitud_libre')">
+                        <div class="card-icon orange">
+                            <svg width="36" height="36" viewBox="0 0 48 48" fill="none">
+                                <rect x="10" y="10" width="28" height="28" rx="3" stroke="currentColor" stroke-width="3"/>
+                                <path d="M16 20H32M16 26H28M16 32H24" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/>
+                                <path d="M30 10L38 18M30 10H36V16" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                            </svg>
+                        </div>
+                        <h3 class="card-title">Solicitud Libre</h3>
+                        <p class="card-description">Para trámites no contemplados en los formatos anteriores.</p>
+                        <div class="card-footer">
+                            <span class="card-badge">SharePoint</span>
+                            <span class="card-arrow">→</span>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- ─── FORMULARIO ─── -->
+            <section id="form-section" class="form-section">
+                <button class="btn-back" onclick="backToLanding()">← Regresar</button>
+                <div class="form-container">
+                    <div class="form-header">
+                        <h2 id="form-title" class="form-title"></h2>
+                        <p id="form-subtitle" class="form-subtitle"></p>
+                    </div>
+                    <form id="dynamic-form" class="dynamic-form"></form>
+                    <div class="form-actions">
+                        <button type="button" class="btn-secondary-large" onclick="backToLanding()">Cancelar</button>
+                        <button type="button" class="btn-primary-large" onclick="submitForm()">
+                            Enviar Solicitud
+                        </button>
+                    </div>
+                </div>
+            </section>
+
+            <!-- ─── MIS SOLICITUDES ─── -->
+            <section id="mis-solicitudes-section" class="mis-solicitudes-section">
+                <div class="section-header">
+                    <h2 class="section-title">📋 Mis Solicitudes</h2>
+                    <button class="btn-nav-secondary" onclick="goToHome()">← Volver al Inicio</button>
+                </div>
+                <div id="solicitudes-list" class="solicitudes-list"></div>
+            </section>
+
+            <!-- ─── PANEL ADMIN ─── -->
+            <section id="admin-panel-section" class="admin-panel-section">
+                <div class="section-header">
+                    <h2 class="section-title">👑 Panel de Administración — CITRO</h2>
+                    <button class="btn-nav-secondary" onclick="goToHome()">← Volver al Inicio</button>
+                </div>
+
+                <!-- Tarjetas de Estadísticas -->
+                <div class="stats-grid">
+                    <div class="stat-card green">
+                        <div class="stat-icon">💰</div>
+                        <div class="stat-content">
+                            <div class="stat-label">Total Autorizado</div>
+                            <div class="stat-value" id="total-autorizado">$0 MXN</div>
+                        </div>
+                    </div>
+                    <div class="stat-card blue">
+                        <div class="stat-icon">📋</div>
+                        <div class="stat-content">
+                            <div class="stat-label">Total Solicitudes</div>
+                            <div class="stat-value" id="total-solicitudes">0</div>
+                        </div>
+                    </div>
+                    <div class="stat-card orange">
+                        <div class="stat-icon">⏳</div>
+                        <div class="stat-content">
+                            <div class="stat-label">Pendientes</div>
+                            <div class="stat-value" id="total-pendientes">0</div>
+                        </div>
+                    </div>
+                    <div class="stat-card teal">
+                        <div class="stat-icon">✅</div>
+                        <div class="stat-content">
+                            <div class="stat-label">Aprobadas</div>
+                            <div class="stat-value" id="total-aprobadas">0</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Filtros -->
+                <div class="filters-bar">
+                    <input type="text" id="search-filter" class="filter-input" placeholder="🔍 Buscar por nombre, folio, email..." oninput="filterAdmin()">
+                    <select id="status-filter" class="filter-select" onchange="filterAdmin()">
+                        <option value="">Todos los estados</option>
+                        <option value="Pendiente">Pendiente</option>
+                        <option value="En Revisión">En Revisión</option>
+                        <option value="Aprobado">Aprobado</option>
+                        <option value="Rechazado">Rechazado</option>
+                    </select>
+                    <select id="type-filter" class="filter-select" onchange="filterAdmin()">
+                        <option value="">Todos los tipos</option>
+                        <option value="Apoyo Académico">Apoyo Académico</option>
+                        <option value="Aval Institucional">Aval Institucional</option>
+                        <option value="Apoyo a Terceros">Apoyo a Terceros</option>
+                        <option value="Comité Tutorial">Comité Tutorial</option>
+                        <option value="Solicitud Libre">Solicitud Libre</option>
+                    </select>
+                    <button class="btn-export" onclick="exportToExcel()">
+                        📊 Exportar a Excel
+                    </button>
+                </div>
+
+                <!-- Tabla -->
+                <div class="admin-table-container">
+                    <table class="admin-table" id="admin-table">
+                        <thead>
+                            <tr>
+                                <th>Folio</th>
+                                <th>Fecha</th>
+                                <th>Tipo</th>
+                                <th>Solicitante</th>
+                                <th>Email</th>
+                                <th>$ Solicitado</th>
+                                <th>Estado</th>
+                                <th>$ Autorizado</th>
+                                <th>Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody id="admin-table-body">
+                            <tr id="loading-row">
+                                <td colspan="9" style="text-align:center;padding:40px">
+                                    <div class="spinner-small"></div>
+                                    Cargando desde SharePoint...
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+            <!-- ─── ÉXITO ─── -->
+            <section id="success-section" class="success-section">
+                <div class="success-container">
+                    <div class="success-icon">✅</div>
+                    <h2 class="success-title">¡Solicitud Enviada Exitosamente!</h2>
+                    <p class="success-description">
+                        Su solicitud fue guardada en <strong>SharePoint</strong> y enviada al H. Consejo Técnico del CITRO.
+                    </p>
+                    <div class="success-details">
+                        <div class="detail-item">
+                            <span class="detail-label">Folio:</span>
+                            <span id="success-folio" class="detail-value">—</span>
+                        </div>
+                        <div class="detail-item">
+                            <span class="detail-label">Fecha:</span>
+                            <span id="success-date" class="detail-value">—</span>
+                        </div>
+                        <div class="detail-item">
+                            <span class="detail-label">Tipo:</span>
+                            <span id="success-type" class="detail-value">—</span>
+                        </div>
+                    </div>
+                    <div class="success-actions">
+                        <button class="btn-calendar-outlook" onclick="addToOutlookCalendar()">
+                            📅 Agregar a Outlook
+                        </button>
+                        <button class="btn-sharepoint" onclick="openSharePoint()">
+                            🗂️ Ver en SharePoint
+                        </button>
+                    </div>
+                    <button class="btn-primary-large" onclick="goToHome()">Realizar Otra Solicitud</button>
+                </div>
+            </section>
+
+            <!-- Loading overlay -->
+            <div id="loading-overlay" class="loading-overlay">
+                <div class="loading-spinner">
+                    <div class="spinner"></div>
+                    <p class="loading-text">Procesando solicitud en SharePoint...</p>
+                </div>
+            </div>
+
+            <!-- Modal Edición Admin -->
+            <div id="edit-modal" class="modal">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h3 class="modal-title">Editar Solicitud</h3>
+                        <button class="modal-close" onclick="closeEditModal()">✕</button>
+                    </div>
+                    <div class="modal-body">
+                        <input type="hidden" id="edit-sharepoint-id">
+                        <div class="form-group">
+                            <label class="form-label">Estado</label>
+                            <select id="edit-status" class="form-select">
+                                <option value="Pendiente">⏳ Pendiente</option>
+                                <option value="En Revisión">🔍 En Revisión</option>
+                                <option value="Aprobado">✅ Aprobado</option>
+                                <option value="Rechazado">❌ Rechazado</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Monto Autorizado (MXN)</label>
+                            <input type="number" id="edit-monto" class="form-input" placeholder="0.00">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Notas del Consejo Técnico</label>
+                            <textarea id="edit-notas" class="form-textarea" rows="4" placeholder="Observaciones, condiciones o motivos de la decisión..."></textarea>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Notificar al solicitante por email</label>
+                            <select id="edit-notify" class="form-select">
+                                <option value="si">✉️ Sí, enviar notificación</option>
+                                <option value="no">No enviar</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button class="btn-secondary-large" onclick="closeEditModal()">Cancelar</button>
+                        <button class="btn-primary-large" onclick="saveEdit()">Guardar en SharePoint</button>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </main>
+
+    <!-- ═══ FOOTER ═══ -->
+    <footer class="footer">
+        <div class="container footer-content">
+            <div class="footer-info">
+                <p class="footer-title">Centro de Investigaciones Tropicales (CITRO)</p>
+                <p class="footer-text">Universidad Veracruzana • Microsoft 365</p>
+            </div>
+            <div class="footer-links">
+                <span class="footer-ms">
+                    <svg width="14" height="14" viewBox="0 0 21 21" fill="none">
+                        <rect x="0" y="0" width="10" height="10" fill="#F25022"/>
+                        <rect x="11" y="0" width="10" height="10" fill="#7FBA00"/>
+                        <rect x="0" y="11" width="10" height="10" fill="#00A4EF"/>
+                        <rect x="11" y="11" width="10" height="10" fill="#FFB900"/>
+                    </svg>
+                    Powered by Microsoft 365
+                </span>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Scripts -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="config-m365.js"></script>
+    <script src="forms-data.js"></script>
+    <script src="auth-msal.js"></script>
+    <script src="sharepoint.js"></script>
+    <script src="admin-m365.js"></script>
+    <script src="calendar-outlook.js"></script>
+    <script src="app-m365.js"></script>
+</body>
+</html>
